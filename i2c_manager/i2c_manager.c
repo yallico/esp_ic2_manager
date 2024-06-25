@@ -28,6 +28,7 @@ SOFTWARE.
 
 #include <stdint.h>
 #include <stddef.h>
+#include <inttypes.h>
 
 #include <esp_log.h>
 
@@ -100,6 +101,7 @@ static const uint8_t ACK_CHECK_EN = 1;
 			if (port != I2C_NUM_1) ERROR_PORT(port, fail);
 	#else
 		#define I2C_PORT_CHECK(port, fail) \
+			ESP_LOGI(TAG, "I2C_NUM not defined"); \
 			ERROR_PORT(port, fail);
 	#endif
 #endif
@@ -168,7 +170,7 @@ esp_err_t I2C_FN(_init)(i2c_port_t port) {
 			ESP_LOGW(TAG, "If it was already open, we'll use it with whatever settings were used "
 			              "to open it. See I2C Manager README for details.");
 		} else {
-			ESP_LOGI(TAG, "Initialised port %d (SDA: %d, SCL: %d, speed: %d Hz.)",
+			ESP_LOGI(TAG, "Initialised port %d (SDA: %d, SCL: %d, speed: %"PRIu32" Hz.)",
 					 port, conf.sda_io_num, conf.scl_io_num, conf.master.clk_speed);
 		}
 
@@ -186,7 +188,7 @@ esp_err_t I2C_FN(_read)(i2c_port_t port, uint16_t addr, uint32_t reg, uint8_t *b
     // May seem weird, but init starts with a check if it's needed, no need for that check twice.
 	I2C_FN(_init)(port);
 
-   	ESP_LOGV(TAG, "Reading port %d, addr 0x%03x, reg 0x%04x", port, addr, reg);
+   	ESP_LOGV(TAG, "Reading port %d, addr 0x%03x, reg 0x%04"PRIu32, port, addr, reg);
 
 	TickType_t timeout = 0;
 	#if defined (I2C_ZERO)
@@ -239,7 +241,7 @@ esp_err_t I2C_FN(_write)(i2c_port_t port, uint16_t addr, uint32_t reg, const uin
     // May seem weird, but init starts with a check if it's needed, no need for that check twice.
 	I2C_FN(_init)(port);
 
-    ESP_LOGV(TAG, "Writing port %d, addr 0x%03x, reg 0x%04x", port, addr, reg);
+    ESP_LOGV(TAG, "Writing port %d, addr 0x%03x, reg 0x%04"PRIu32, port, addr, reg);
 
 	TickType_t timeout = 0;
 	#if defined (I2C_ZERO)
