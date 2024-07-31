@@ -71,7 +71,6 @@ static const uint8_t ACK_CHECK_EN = 1;
 	#define I2C_MANAGER_0_LOCK_TIMEOUT	( ( pdMS_TO_TICKS( CONFIG_I2C_MANAGER_0_LOCK_TIMEOUT ) )
 #endif
 
-
 #if defined (I2C_NUM_1) && defined (CONFIG_I2C_MANAGER_1_ENABLED)
 	#define I2C_ONE 					I2C_NUM_1
 	#if defined (CONFIG_I2C_MANAGER_1_PULLUPS)
@@ -84,27 +83,30 @@ static const uint8_t ACK_CHECK_EN = 1;
 	#define I2C_MANAGER_1_LOCK_TIMEOUT	( pdMS_TO_TICKS( CONFIG_I2C_MANAGER_1_LOCK_TIMEOUT ) )
 #endif
 
-#define ERROR_PORT(port, fail) { \
-	ESP_LOGE(TAG, "Invalid port or not configured for I2C Manager: %d", (int)port); \
-	return fail; \
+#define ERROR_PORT(port, fail, msg) { \
+    ESP_LOGE(TAG, "Error - %s: %d", msg, (int)port); \
+    return fail; \
 }
 
 #if defined(I2C_ZERO) && defined (I2C_ONE)
-	#define I2C_PORT_CHECK(port, fail) \
-		if (port != I2C_NUM_0 && port != I2C_NUM_1) ERROR_PORT(port, fail);
+    #define I2C_PORT_CHECK(port, fail) \
+        if (port != I2C_NUM_0 && port != I2C_NUM_1) \
+            ERROR_PORT(port, fail, "Port is not I2C_NUM_0 or I2C_NUM_1");
 #else
-	#if defined(I2C_ZERO)
-		#define I2C_PORT_CHECK(port, fail) \
-			if (port != I2C_NUM_0) ERROR_PORT(port, fail);
-	#elif defined(I2C_ONE)
-		#define I2C_PORT_CHECK(port, fail) \
-			if (port != I2C_NUM_1) ERROR_PORT(port, fail);
-	#else
-		#define I2C_PORT_CHECK(port, fail) \
-			ESP_LOGI(TAG, "I2C_NUM not defined"); \
-			ERROR_PORT(port, fail);
-	#endif
+    #if defined(I2C_ZERO)
+        #define I2C_PORT_CHECK(port, fail) \
+            if (port != I2C_NUM_0) \
+                ERROR_PORT(port, fail, "Port is not I2C_NUM_0");
+    #elif defined(I2C_ONE)
+        #define I2C_PORT_CHECK(port, fail) \
+            if (port != I2C_NUM_1) \
+                ERROR_PORT(port, fail, "Port is not I2C_NUM_1");
+    #else
+        #define I2C_PORT_CHECK(port, fail) \
+            ERROR_PORT(port, fail, "No valid I2C ports are defined");
+    #endif
 #endif
+
 
 static void i2c_send_address(i2c_cmd_handle_t cmd, uint16_t addr, i2c_rw_t rw) {
 	if (addr & I2C_ADDR_10) {
